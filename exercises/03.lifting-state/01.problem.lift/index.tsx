@@ -14,20 +14,34 @@ function getQueryParam() {
 
 function App() {
 	// 🐨 add the useState for the query here (lift it up from the Form)
+	const [query, setQuery] = useState(getQueryParam)
+	useEffect(() => {
+		const updateQuery = () => setQuery(getQueryParam())
+		window.addEventListener('popstate', updateQuery)
+		return () => {
+			window.removeEventListener('popstate', updateQuery)
+		}
+	}, [])
 	return (
 		<div className="app">
 			{/* 🐨 pass the query and setQuery to the form */}
-			<Form />
+			<Form query={query} setQuery={setQuery} />
 			{/* 🐨 pass the query to this prop */}
-			<MatchingPosts query="" />
+			<MatchingPosts query={query} />
 		</div>
 	)
 }
 
 // 🐨 update the Form props to accept query and setQuery
-function Form() {
+function Form({
+	query,
+	setQuery,
+}: {
+	query: string
+	setQuery: (query: string) => void
+}) {
 	// 🐨 lift this up to the App
-	const [query, setQuery] = useState(getQueryParam)
+	// const [query, setQuery] = useState(getQueryParam)
 
 	const words = query.split(' ').map(w => w.trim())
 
@@ -36,13 +50,6 @@ function Form() {
 	const caterpillarChecked = words.includes('caterpillar')
 
 	// 🐨 move this up to the App as well
-	useEffect(() => {
-		const updateQuery = () => setQuery(getQueryParam())
-		window.addEventListener('popstate', updateQuery)
-		return () => {
-			window.removeEventListener('popstate', updateQuery)
-		}
-	}, [])
 
 	function handleCheck(tag: string, checked: boolean) {
 		const newWords = checked ? [...words, tag] : words.filter(w => w !== tag)
