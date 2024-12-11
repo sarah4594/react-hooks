@@ -94,48 +94,56 @@ function Form({
 
 function MatchingPosts({ query }: { query: string }) {
 	const matchingPosts = getMatchingPosts(query)
-	// 🐨 lift the favorite state from the Card component to here
+	const [favorites, setFavorites] = useState<Array<string>>([])
 
 	return (
 		<ul className="post-list">
 			{matchingPosts
 				.sort((a, b) => {
-					// 🐨 determine whether post a and b are included in favorites
-					const aFav = false // 💰 favorites.includes(a.id)
-					const bFav = false // 💰 favorites.includes(b.id)
+					const aFav = favorites.includes(a.id)
+					const bFav = favorites.includes(b.id)
 					return aFav === bFav ? 0 : aFav ? -1 : 1
 				})
 				.map(post => (
 					<Card
 						key={post.id}
 						post={post}
-						// 🐨 pass an isFavorited prop
-						// 🐨 pass an onFavoriteClick that accepts a "favorite" boolean
-						//   if it's true, then add the post.id to the favorites
-						//   if it's false, then remove the post.id from the favorites
+						isFavorited={favorites.includes(post.id)}
+						onFavoriteClick={favorite =>
+							setFavorites(prevFavorites => {
+								if (favorite) {
+									return [...prevFavorites, post.id]
+								} else {
+									return prevFavorites.filter(id => id !== post.id)
+								}
+							})
+						}
 					/>
 				))}
 		</ul>
 	)
 }
 
-// 🐨 add props for isFavorited and onFavoriteClick
-function Card({ post }: { post: BlogPost }) {
-	// 🐨 lift this up to MatchingPosts
-	const [isFavorited, setIsFavorited] = useState(false)
+function Card({
+	post,
+	isFavorited,
+	onFavoriteClick,
+}: {
+	post: BlogPost
+	isFavorited: boolean
+	onFavoriteClick: (isFavorited: boolean) => void
+}) {
 	return (
 		<li>
 			{isFavorited ? (
 				<button
 					aria-label="Remove favorite"
-					// 🐨 call onFavoriteClick
-					onClick={() => setIsFavorited(false)}
+					onClick={() => onFavoriteClick(false)}
 				>
 					❤️
 				</button>
 			) : (
-				// 🐨 call onFavoriteClick
-				<button aria-label="Add favorite" onClick={() => setIsFavorited(true)}>
+				<button aria-label="Add favorite" onClick={() => onFavoriteClick(true)}>
 					🤍
 				</button>
 			)}
